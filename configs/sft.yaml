@@ -1,0 +1,26 @@
+# SFT guide configuration (manual Section 9.2). Values here are the ones actually used.
+model_name: Qwen/Qwen2.5-0.5B
+train_file: data/processed/sft_train.jsonl   # 30,000 single-turn UltraChat examples
+val_file: data/processed/sft_val.jsonl       # 1,000 examples from test_sft
+output_dir: outputs/sft
+seed: 42
+max_length: 512
+per_device_batch_size: 2
+gradient_accumulation_steps: 16              # effective batch 32
+eval_batch_size: 8
+optimizer: adamw
+learning_rate: 2.0e-5
+adam_betas: [0.9, 0.999]
+weight_decay: 0.1                            # applied to >=2-D weights only
+warmup_ratio: 0.03
+lr_schedule: cosine                          # linear warmup then cosine decay to 0
+min_lr_ratio: 0.0
+max_grad_norm: 1.0
+num_epochs: 1
+fp16: true                                   # fp16 autocast, fp32 master weights, GradScaler
+gradient_checkpointing: true
+fast_logprobs: true
+log_every: 10
+eval_every: 100
+eval_at_start: true
+device: auto                                 # cuda:0

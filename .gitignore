@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.tmp
+# large / regenerable artifacts
+outputs/**/best/
+outputs/**/final/
+outputs/**/trainer/
+outputs/**/*.safetensors
+data/processed/*.jsonl
+*.zip
+.ipynb_checkpoints/
