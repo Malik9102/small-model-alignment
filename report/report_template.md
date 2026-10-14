@@ -19,7 +19,11 @@
 
 **Seeds.** 42 for data shuffling, subset selection, the AlpacaEval subset, training, and A/B order randomization.
 
-**Filtering** (counts in `data/processed/manifest.json`). Single-turn only. Empty or identical responses removed. UltraFeedback score ties removed. Formatted prompt ≤ 256 tokens. SFT keeps only complete demonstrations (prompt + response + EOS ≤ 512) so the model always sees where a response ends. DPO pairs whose chosen and rejected windows become identical after truncation are removed. Exact-match overlap with any evaluation prompt is removed. [FILL: kept / seen counts from the manifest]
+**Filtering** (`data/processed/manifest.json`):
+- **All sets:** single-turn only; empty or identical responses removed; formatted prompt ≤ 256 tokens; exact-match overlap with any evaluation prompt removed.
+- **SFT:** only complete demonstrations (prompt + response + EOS ≤ 512 tokens), so the model always sees where a response ends. 57,344 examples were examined: 11,130 rejected for long prompts and 16,101 for exceeding 512 tokens. This biases SFT towards shorter responses than raw UltraChat.
+- **HH-RLHF:** 49,152 examined; 34,053 rejected as multi-turn or malformed, 58 for long prompts.
+- **UltraFeedback:** 22,528 examined; 2,907 rejected (score ties or multi-turn), 3,336 for long prompts. Pairs whose chosen and rejected token windows become identical after truncation are also removed.
 
 **Prompt format** (identical for SFT, DPO and all Qwen generations):
 ```
@@ -70,11 +74,38 @@ A plain template was chosen because the base model has no chat tuning. The appen
 
 [PASTE *auto* table "Training outcomes"]
 
-[FILL, 4-6 sentences]
-- SFT: did validation loss fall smoothly from the step-0 base value of [FILL] to [FILL]? Is there any train/val gap?
-- DPO: describe the reward-accuracy rise from exactly 0 at step 0, and the margin. Did chosen and rejected rewards both fall (a known DPO behaviour)? Which step was selected, and is that step the final one or earlier?
-- LoRA: did reward accuracy saturate on 20 held-out pairs, which would suggest overfitting a tiny dataset?
+**Measured:**
+
+*SFT:*
+- Validation loss went from 1.3685 (base model, step 0) to 1.3335 at step 938, the best checkpoint and also the final one.
+- It rose to about 1.39 over steps 100–200, at peak learning rate, before falling steadily.
+- It was still decreasing at the end, so a second epoch would likely help.
+- 0 skipped fp16 steps.
+
+*HH-DPO (guide config):*
+- Step 0: loss = ln 2 and margin 0.0000.
+- Reward accuracy rose to about 0.60 by step 50, then plateaued at 0.60–0.62. The best was 0.616 at step 200, versus 0.615 at the final step (a difference of 1 pair in 1,000; SE ≈ ±1.5%).
+- Validation loss fell throughout (0.660 → 0.639) and the margin grew (0.15 → 0.26).
+- Both implicit rewards ended negative (r_w −0.31, r_l −0.58): likelihood displacement.
+
+*UF-DPO (guide config):*
+- Higher and cleaner signal: accuracy 0.686 at step 50 → 0.729 (best = final, step 469). Margin 0.48 → 0.76, loss 0.596 → 0.539.
+- r_w stayed near zero (−0.16) while r_l fell to −0.93: DPO mostly pushed rejected responses down.
+
+*LoRA-DPO:*
+- Held-out accuracy reached 1.0 by step 10. Held-out loss fell 0.693 → 0.124, and margin rose to 2.15.
+- Unlike HH, r_w *rose* (+1.09) while r_l fell (−1.06).
+- Mean token entropy rose 2.25 → 2.53.
+
+*Note on fp16:* 1–3 updates per DPO run were skipped by the GradScaler while it calibrated at the start (gradient norms of 40–70, versus about 5 in SFT).
+
+**Interpretation:**
+- [FILL/edit] After about 50 steps, DPO mainly increased confidence on pairs it already ranked correctly, rather than flipping new ones; accuracy plateaued while margins kept growing.
+- UltraFeedback's GPT-4-scored pairs are more separable than HH's noisy human labels (0.73 vs 0.62).
+- The persona pairs are separable almost immediately, so reward accuracy carries no information there after step 10; held-out loss is the useful signal.
 - Do not infer response quality from these curves.
+
+**Note on step-0 reward accuracy:** the logged step-0 accuracy is non-zero (0.09 for HH, 0.29 for UF) even though the loss is ln 2 and the margin prints as 0.0000. GPU floating-point summation isn't bit-deterministic, so the per-pair rewards differ by about 1e-7, and the strict `r_w > r_l` test turns that noise into "correct" pairs. Policy and reference are numerically identical at step 0.
 
 ## 5. DPO-versus-SFT results (§14.5)
 
@@ -82,9 +113,27 @@ Judge: [FILL: model actually used] via `kaggle_benchmarks`. Batches of 5 pairs, 
 
 [PASTE *auto* pairwise table. Keep UF-DPO (AlpacaEval) and HH-DPO (HH set) as separate rows. Do not combine them.]
 
+**Uncertainty:** 95% CIs come from the Wilson interval (ties excluded) or a normal approximation (ties counted as ½). With n = 300, a CI is roughly ±5.5 points.
+
+**Cross-set results (alignment tax) and the effect of SFT:** [PASTE the rows for HH-DPO on AlpacaEval, UF-DPO on the HH set, and SFT vs base]. Does safety-oriented DPO lose on general helpfulness? Does helpfulness DPO behave worse on the HH set?
+
+**Length bias:** [PASTE the table from the notebook 06 length cell, or from `outputs/eval/length_bias.json`]. Report the mean words for candidate and baseline, how often the judge picked the longer answer, and the win rate on near-equal-length pairs, which is a crude length-controlled estimate (Dubois et al.).
+
 **Position-bias check.** [FILL: consistency on 100 A/B-swapped pairs per track, and the "judge picked A" rate]
 
 **LoRA persona (separate target).** Style rubric: LoRA vs base [FILL W/T/L]. Quality/safety rubric (style ignored): [FILL W/T/L]. [FILL: one sentence on whether style improved without losing usefulness or safety, citing the safety-sensitive prompts]
+
+### Ablations (§14.3: performance-driven deviations; each changes one setting)
+
+| Run | Change from guide | Val reward acc (best) | Val margin (final) | Judge vs SFT/base [95% CI] | Observations |
+|---|---|---|---|---|---|
+| HH-DPO (guide) | — | 0.616 | 0.264 | [FILL] | In 5 sanity samples, still complied with 2 of 3 clearly harmful requests |
+| HH-DPO lr 5e-6 | lr 1e-6 → 5e-6 | [FILL] | [FILL] | [FILL] | [FILL: refusal rate by HH category; over-refusal on `benign_helpfulness`?] |
+| LoRA (guide) | — | 1.00 | 2.15 | style [FILL] / quality [FILL] | Strong style; fixed sycophancy on "user is wrong" prompts; regressed on self-harm, knife and SQL prompts; one loop to max tokens |
+| LoRA β 0.5 | β 0.1 → 0.5 | [FILL] | [FILL] | style [FILL] / quality [FILL] | [FILL] |
+| LoRA 1 epoch | 3 → 1 epoch | [FILL] | [FILL] | style [FILL] / quality [FILL] | [FILL] |
+
+Plots: `outputs/plots/dpo_ablation_comparison.png` and `outputs/plots/lora_ablation_comparison.png`.
 
 ## 6. Interpretation and error analysis (§14.6)
 
@@ -93,6 +142,10 @@ Judge: [FILL: model actually used] via `kaggle_benchmarks`. Batches of 5 pairs, 
 - **Per-category breakdown** on the HH set ([PASTE per-category table]). Is the gain concentrated in refusal categories? Is there over-refusal on `benign_helpfulness` (alignment tax)? Use the `refusal_phrase_rate_by_category` values from `outputs/eval/generation_stats.json`.
 - **Verbosity.** Mean words for SFT vs DPO (generation stats). Does the judge's preference track length?
 - **Link to diagnostics.** Relate the results to reward accuracy, margin, β = 0.1, lr 1e-6 and about 469 steps. Small movement from the reference may explain small win-rate changes.
+- **Observations already visible in the samples** (verify against the judge numbers):
+  - **SFT taught format, not facts.** All 5 sanity answers ended with EOS, and the summary became concise (413 → 135 tokens). But "extinct bear species" got worse, listing the polar bear and a gorilla. DPO did not fix it either; UF-DPO added orangutans.
+  - **UF-DPO lengthened answers** in the sanity samples (e.g. 241 → 309 and 365 → 512 tokens). This is the known verbosity effect of UltraFeedback-style preferences, and the reason for the length-bias check.
+  - **The persona LoRA reduced sycophancy.** The base SmolLM2 agreed with bad practices: reusing a raw-chicken board, API keys in a public repo, bare `except: pass`, mixing bleach with ammonia, cooking chicken left out overnight. The persona model pushed back correctly on all of them, because blunt correction is exactly what the persona data rewards. At the same time it trivialised self-harm, gave knife-sharpening steps framed around harm, broke the SQL-injection answer, and looped once. The style and quality judges should be read together.
 - **Examples** from `outputs/eval/examples_*.md`. Give 1-2 where DPO improves and 1-2 where it regresses or barely changes. Quote briefly and tie each to the aggregate numbers.
 
 ## 7. Limitations and reproducibility (§14.7)
@@ -102,6 +155,9 @@ Judge: [FILL: model actually used] via `kaggle_benchmarks`. Batches of 5 pairs, 
 - Only 300 prompts per evaluation set (±[FILL] binomial standard error on the win rate).
 - One LLM judge, with possible position, length and self-preference biases.
 - One epoch per run, and only 24 persona prompts.
+- SFT validation loss was still decreasing at the end; SFT was not retrained, because both DPO runs depend on that exact checkpoint.
+- Training jobs are restartable at stage granularity (a finished stage is skipped on rerun), but a crashed run cannot resume mid-way: optimizer state is not checkpointed, to stay within Kaggle's 20 GB disk.
+- Generation uses greedy decoding with repetition_penalty 1.1 for every model. The occasional degenerate loop was kept rather than hidden with n-gram blocking, which would also corrupt code answers.
 - [FILL: any failed runs or Kaggle interruptions]
 
 **Where everything lives.**
@@ -111,7 +167,7 @@ Judge: [FILL: model actually used] via `kaggle_benchmarks`. Batches of 5 pairs, 
 - Pairs and judgments: `outputs/eval/*_pairs.jsonl`, `*_judged.jsonl`, `*_summary.json`, `*_failures.jsonl`.
 - Tables: `outputs/report_tables.md`.
 
-**Reproduce.** Run notebooks `01` → `02` → `03a`/`03b` → `04` → `05` → `06` in `notebooks/`. Offline tests: `PYTHONPATH=. python -m pytest -q tests/`.
+**Reproduce.** Run notebooks `01` → `02` → `03a`/`03b`/`03c` → `04` → `05` → `06` in `notebooks/`. Offline tests: `PYTHONPATH=. python -m pytest -q tests/`.
 
 ## Works Cited
 

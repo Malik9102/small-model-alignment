@@ -12,6 +12,7 @@ JSONL, a checkpoint after every batch, and resume from existing judgments.
 from __future__ import annotations
 
 import json
+import math
 import random
 import re
 import time
@@ -450,12 +451,40 @@ def run_judging(
 # ---------------------------------------------------------------------------
 
 
+def wilson_interval(successes: int, n: int, z: float = 1.96):
+    """95% Wilson score interval for a binomial proportion (well-behaved for small n / extreme p)."""
+
+    if n <= 0:
+        return None
+    p = successes / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return [max(0.0, centre - half), min(1.0, centre + half)]
+
+
+def mean_interval(scores, z: float = 1.96):
+    """Normal-approximation 95% CI for the mean of per-pair scores (win=1, tie=0.5, loss=0)."""
+
+    n = len(scores)
+    if n == 0:
+        return None
+    mean = sum(scores) / n
+    if n == 1:
+        return [mean, mean]
+    var = sum((s - mean) ** 2 for s in scores) / (n - 1)
+    half = z * math.sqrt(var / n)
+    return [max(0.0, mean - half), min(1.0, mean + half)]
+
+
 def _rates(counter: Counter) -> dict:
     wins, losses, ties = counter["win"], counter["loss"], counter["tie"]
     decided = wins + losses
     judged = wins + losses + ties
     total = sum(counter.values())
     return {
+        "win_rate_excluding_ties_ci95": wilson_interval(wins, decided),
+        "win_rate_ties_half_ci95": mean_interval([1.0] * wins + [0.5] * ties + [0.0] * losses),
         "n": total,
         "wins": wins,
         "losses": losses,
@@ -497,12 +526,21 @@ def _pct(value):
     return "n/a" if value is None else f"{100 * value:.1f}%"
 
 
+def _pct_ci(value, interval):
+    if value is None:
+        return "n/a"
+    if not interval:
+        return _pct(value)
+    return f"{100 * value:.1f}% [{100 * interval[0]:.1f}, {100 * interval[1]:.1f}]"
+
+
 def format_summary(summary: dict) -> str:
     o = summary["overall"]
     lines = [
         f"{summary['candidate']} vs {summary['baseline']}  (judge: {summary.get('judge_model', '?')}, rubric: {summary.get('rubric', '?')})",
         f"  n={o['n']} wins={o['wins']} losses={o['losses']} ties={o['ties']} unknown={o['unknown']} failed={o['failed']}",
-        f"  win rate (excl. ties) {_pct(o['win_rate_excluding_ties'])} | (ties = half) {_pct(o['win_rate_ties_half'])} "
+        f"  win rate (excl. ties) {_pct_ci(o['win_rate_excluding_ties'], o.get('win_rate_excluding_ties_ci95'))} "
+        f"| (ties = half) {_pct_ci(o['win_rate_ties_half'], o.get('win_rate_ties_half_ci95'))} "
         f"| judge picked A {_pct(summary['judge_picked_A_rate'])}",
     ]
     if len(summary["per_category"]) > 1:
@@ -517,8 +555,10 @@ def format_summary(summary: dict) -> str:
 def summary_markdown_row(name: str, summary: dict) -> str:
     o = summary["overall"]
     return (
-        f"| {name} | {o['n']} | {o['wins']} | {o['ties']} | {o['losses']} | {_pct(o['win_rate_excluding_ties'])} "
-        f"| {_pct(o['win_rate_ties_half'])} | {o['unknown']} | {o['failed']} | {summary.get('pairs_needing_retry', 0)} "
+        f"| {name} | {o['n']} | {o['wins']} | {o['ties']} | {o['losses']} "
+        f"| {_pct_ci(o['win_rate_excluding_ties'], o.get('win_rate_excluding_ties_ci95'))} "
+        f"| {_pct_ci(o['win_rate_ties_half'], o.get('win_rate_ties_half_ci95'))} | {o['unknown']} | {o['failed']} "
+        f"| {summary.get('pairs_needing_retry', 0)} "
         f"| {summary.get('judge_model', '')} |"
     )
 

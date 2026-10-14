@@ -128,6 +128,8 @@ def plot_dpo(run_dir, output_dir):
 
 def plot_lora(run_dir, output_dir):
     rows = read_jsonl(Path(run_dir) / "metrics.jsonl")
+    info = run_info(run_dir)
+    dpo_cfg = info.get("dpo", {})
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.8))
     specs = [
         ("loss", "eval_loss", "DPO loss"),
@@ -145,9 +147,47 @@ def plot_lora(run_dir, output_dir):
         ax.set_ylabel(label)
         ax.grid(alpha=0.3)
         ax.legend(fontsize=8)
-    fig.suptitle("LoRA-DPO persona tuning (SmolLM2-360M-Instruct, TRL DPOTrainer)")
+    fig.suptitle(
+        f"LoRA-DPO persona tuning: {Path(run_dir).name} (SmolLM2-360M-Instruct, β={dpo_cfg.get('beta', '?')}, "
+        f"lr {dpo_cfg.get('learning_rate', '?')}, {dpo_cfg.get('num_train_epochs', '?')} epochs)"
+    )
     fig.tight_layout()
-    path = Path(output_dir) / "lora_persona_training.png"
+    path = Path(output_dir) / f"{Path(run_dir).name}_training.png"
+    fig.savefig(path, dpi=160)
+    plt.close(fig)
+    return path
+
+
+def plot_overlay(run_dirs, output_dir, kind: str):
+    """Validation curves of several runs on shared axes (guide config vs ablations)."""
+
+    if kind == "dpo":
+        specs = [("loss", "validation DPO loss"), ("reward_accuracy", "validation reward accuracy"), ("reward_margin", "validation reward margin")]
+        step_label = "optimizer step (32 pairs)"
+    else:
+        specs = [("eval_loss", "held-out DPO loss"), ("eval_rewards/accuracies", "held-out reward accuracy"), ("eval_rewards/margins", "held-out reward margin")]
+        step_label = "optimizer step"
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+    for run_dir in run_dirs:
+        rows = read_jsonl(Path(run_dir) / "metrics.jsonl")
+        info = run_info(run_dir)
+        if kind == "dpo":
+            label = f"{info.get('run_name', Path(run_dir).name)} (lr {info.get('learning_rate', '?')})"
+        else:
+            cfg = info.get("dpo", {})
+            label = f"{Path(run_dir).name} (β={cfg.get('beta', '?')}, {cfg.get('num_train_epochs', '?')} ep)"
+        for ax, (key, _) in zip(axes, specs):
+            steps, values = series(rows, "val", key)
+            if steps:
+                ax.plot(steps, values, "o-", ms=3, label=label)
+    for ax, (_, title) in zip(axes, specs):
+        ax.set_xlabel(step_label)
+        ax.set_ylabel(title)
+        ax.grid(alpha=0.3)
+        ax.legend(fontsize=7)
+    fig.suptitle("Guide configuration vs ablation" + (" (from-scratch DPO, 1,000 val pairs)" if kind == "dpo" else " (LoRA-DPO, 20 held-out pairs)"))
+    fig.tight_layout()
+    path = Path(output_dir) / f"{kind}_ablation_comparison.png"
     fig.savefig(path, dpi=160)
     plt.close(fig)
     return path
@@ -157,7 +197,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sft", default=None)
     parser.add_argument("--dpo", nargs="*", default=[])
-    parser.add_argument("--lora", default=None)
+    parser.add_argument("--lora", nargs="*", default=[])
+    parser.add_argument("--overlay_dpo", nargs="*", default=[], help="DPO run dirs to overlay (e.g. guide + ablation)")
+    parser.add_argument("--overlay_lora", nargs="*", default=[], help="LoRA run dirs to overlay")
     parser.add_argument("--output_dir", default="outputs/plots")
     args = parser.parse_args()
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
@@ -166,8 +208,12 @@ def main():
         made.append(plot_sft(args.sft, args.output_dir))
     for run in args.dpo:
         made.append(plot_dpo(run, args.output_dir))
-    if args.lora:
-        made.append(plot_lora(args.lora, args.output_dir))
+    for run in args.lora:
+        made.append(plot_lora(run, args.output_dir))
+    if len(args.overlay_dpo) > 1:
+        made.append(plot_overlay(args.overlay_dpo, args.output_dir, "dpo"))
+    if len(args.overlay_lora) > 1:
+        made.append(plot_overlay(args.overlay_lora, args.output_dir, "lora"))
     for path in made:
         print(f"[plot] {path}")
 

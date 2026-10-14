@@ -370,3 +370,30 @@ def test_summary_rates():
     assert s["win_rate_excluding_ties"] == pytest.approx(2 / 3)
     assert s["win_rate_ties_half"] == pytest.approx(2.5 / 4)
     json.dumps(s)
+
+
+def test_length_bias_analysis_detects_a_length_preferring_judge(tmp_path):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("lb", "scripts/analyze_length_bias.py")
+    lb = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(lb)
+    cand = [{"id": f"p{i}", "instruction": f"q{i}", "output": "word " * (30 if i % 2 else 5), "generator": "dpo", "category": "c"} for i in range(20)]
+    base = [{"id": f"p{i}", "instruction": f"q{i}", "output": "word " * 12, "generator": "sft", "category": "c"} for i in range(20)]
+    pairs, _ = build_pairs(cand, base, "dpo", "sft", seed=3)
+    write_jsonl(tmp_path / "pairs.jsonl", pairs)
+    run_judging(tmp_path / "pairs.jsonl", tmp_path / "judged.jsonl", sleep_seconds=0, backend="mock", judge=MockJudge())
+    r = lb.analyze(tmp_path / "pairs.jsonl", tmp_path / "judged.jsonl")
+    assert r["judge_picked_longer_rate"] == 1.0  # the mock judge always prefers the longer answer
+    assert r["win_rate_candidate_longer"] == 1.0 and r["win_rate_candidate_shorter"] == 0.0
+    assert r["mean_words_candidate"] == 17.5 and r["mean_words_baseline"] == 12.0
+
+
+def test_confidence_intervals_are_reported():
+    from alignment.judging import wilson_interval
+
+    lo, hi = wilson_interval(165, 300)
+    assert 0.49 < lo < 0.50 and 0.60 < hi < 0.61
+    records = [{"candidate_outcome": "win", "status": "ok", "verdict": "A", "candidate": "d", "baseline": "s", "category": "c", "attempts": 1}] * 3
+    o = summarize_judgments(records)["overall"]
+    assert o["win_rate_excluding_ties_ci95"] is not None and o["win_rate_ties_half_ci95"] is not None

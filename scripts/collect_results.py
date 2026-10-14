@@ -20,6 +20,10 @@ from alignment.judging import summarize_judgments, summary_markdown_row  # noqa:
 from alignment.utils import fix_markdown_tables, read_json, read_jsonl  # noqa: E402
 
 
+DPO_RUNS = ("dpo_hh", "dpo_uf", "dpo_hh_lr5e6")
+LORA_RUNS = ("lora_persona", "lora_persona_beta05", "lora_persona_1epoch")
+
+
 def load(path):
     path = Path(path)
     return read_json(path) if path.exists() else {}
@@ -39,7 +43,7 @@ def config_table(root: Path) -> list[str]:
             f"| {sft['weight_decay']} | {sft['max_grad_norm']} | {sft['per_device_batch_size']} | {sft['gradient_accumulation_steps']} | {eff} "
             f"| fp16 autocast, fp32 weights | {sft['max_length']} | {sft['num_epochs']} / {sft_sum.get('optimizer_steps', '?')} | {sft['seed']} | – | – |"
         )
-    for run in ("dpo_hh", "dpo_uf"):
+    for run in DPO_RUNS:
         cfg = load(root / run / "config_used.json")
         summ = load(root / run / "summary.json")
         if not cfg:
@@ -52,13 +56,20 @@ def config_table(root: Path) -> list[str]:
             f"| {cfg['num_epochs']} / {summ.get('optimizer_steps', '?')} | {cfg['seed']} | {cfg['beta']} "
             f"| SFT best, step {summ.get('reference_checkpoint_state', {}).get('step', '?')} (frozen) |"
         )
-    lora = load(root / "lora_persona" / "config_used.json")
-    lora_sum = load(root / "lora_persona" / "summary.json")
+    for lora_run in LORA_RUNS:
+        lines += lora_config_rows(root, lora_run)
+    return lines
+
+
+def lora_config_rows(root: Path, lora_run: str) -> list[str]:
+    lines = []
+    lora = load(root / lora_run / "config_used.json")
+    lora_sum = load(root / lora_run / "summary.json")
     if lora:
         l, d = lora["lora"], lora["dpo"]
         eff = d["per_device_train_batch_size"] * d["gradient_accumulation_steps"]
         lines.append(
-            f"| LoRA-DPO | LoRA r={l['r']}, α={l['lora_alpha']}, dropout={l['lora_dropout']}, {','.join(l['target_modules'])} "
+            f"| {lora_run} | LoRA r={l['r']}, α={l['lora_alpha']}, dropout={l['lora_dropout']}, {','.join(l['target_modules'])} "
             f"({lora_sum.get('trainable_params', '?'):,} params) | {d.get('optim')} | {d['learning_rate']} | {d['lr_scheduler_type']}, {d['warmup_ratio']:.0%} warmup "
             f"| {d['weight_decay']} | {d['max_grad_norm']} | {d['per_device_train_batch_size']} | {d['gradient_accumulation_steps']} | {eff} "
             f"| fp16 AMP, fp32 weights | {d['max_length']} | {d['num_train_epochs']} / {lora_sum.get('optimizer_steps', '?')} | {lora['seed']} | {d['beta']} "
@@ -74,7 +85,7 @@ def training_table(root: Path) -> list[str]:
         lines.append(
             f"| SFT | {sft['best_step']} | val loss {sft['best_val_loss']:.4f} | val loss {sft['final_val_loss']:.4f} | {sft['train_time']} | {sft['skipped_fp16_steps']} |"
         )
-    for run in ("dpo_hh", "dpo_uf"):
+    for run in DPO_RUNS:
         s = load(root / run / "summary.json")
         if s:
             f = s["final_val"]
@@ -82,11 +93,13 @@ def training_table(root: Path) -> list[str]:
                 f"| {run} | {s['best_step']} | reward acc {s['best_val_reward_accuracy']:.3f}, margin {s['best_val_reward_margin']:.4f} "
                 f"| loss {f['loss']:.4f}, acc {f['reward_accuracy']:.3f}, margin {f['reward_margin']:.4f} | {s['train_time']} | {s['skipped_fp16_steps']} |"
             )
-    lora = load(root / "lora_persona" / "summary.json")
-    if lora:
+    for lora_run in LORA_RUNS:
+        lora = load(root / lora_run / "summary.json")
+        if not lora:
+            continue
         fe = lora.get("final_eval", {})
         lines.append(
-            f"| LoRA-DPO | {lora['optimizer_steps']} (final) | – | loss {fe.get('eval_loss', float('nan')):.4f}, acc {fe.get('eval_rewards/accuracies', 'n/a')}, "
+            f"| {lora_run} | {lora['optimizer_steps']} (final) | – | loss {fe.get('eval_loss', float('nan')):.4f}, acc {fe.get('eval_rewards/accuracies', 'n/a')}, "
             f"margin {fe.get('eval_rewards/margins', 'n/a')} | – | – |"
         )
     return lines
@@ -110,7 +123,7 @@ def main():
     out += [
         "",
         "## Pairwise judgments (Section 14.5)\n",
-        "| Comparison | n | Wins | Ties | Losses | Win rate (excl. ties) | Win rate (ties = ½) | Unknown | Failed | Pairs retried | Judge |",
+        "| Comparison | n | Wins | Ties | Losses | Win rate excl. ties [95% CI] | Win rate ties = ½ [95% CI] | Unknown | Failed | Pairs retried | Judge |",
         "|---|",
     ]
     per_category = []

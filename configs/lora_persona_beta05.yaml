@@ -1,0 +1,31 @@
+# ABLATION of configs/lora_persona.yaml: identical except beta (and output dir).
+model_name: HuggingFaceTB/SmolLM2-360M-Instruct
+data_file: data/persona_lora/ramsay_style_preferences.json   # 220 pairs
+output_dir: outputs/lora_persona_beta05
+seed: 42
+val_size: 20                       # 200 train / 20 held-out pairs for reward accuracy
+lora:
+  r: 16                            # enough capacity for a style shift, ~2% of params
+  lora_alpha: 32                   # alpha = 2r -> effective scale 2.0
+  lora_dropout: 0.05               # mild regularisation: only 200 training pairs
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  bias: none
+dpo:
+  beta: 0.5                        # ABLATION: 5x stronger reference constraint (guide 0.1)
+  learning_rate: 5.0e-5            # LoRA starts at B=0 and needs a larger LR than full fine-tuning
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 2   # effective batch 8 -> 25 steps/epoch
+  num_train_epochs: 3              # ~75 optimizer steps
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.1
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  max_length: 512
+  logging_steps: 5
+  eval_strategy: steps
+  eval_steps: 10
+  save_strategy: "no"
+  report_to: none
+  gradient_checkpointing: false
+  optim: adamw_torch

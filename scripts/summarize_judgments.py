@@ -18,7 +18,7 @@ from alignment.judging import format_summary, position_consistency, summarize_ju
 from alignment.utils import fix_markdown_tables, read_jsonl, write_json  # noqa: E402
 
 HEADER = (
-    "| Comparison | n | Wins | Ties | Losses | Win rate (excl. ties) | Win rate (ties = ½) | Unknown | Failed | Pairs retried | Judge |\n"
+    "| Comparison | n | Wins | Ties | Losses | Win rate excl. ties [95% CI] | Win rate ties = ½ [95% CI] | Unknown | Failed | Pairs retried | Judge |\n"
     "|---|"
 )
 

@@ -24,10 +24,11 @@ alignment/
   data.py                    UltraChat / HH-RLHF / UltraFeedback parsing + filtering, AlpacaEval subset
   judging.py                 pair files, blinded judge prompts, parsing, kbench backend, resumable loop, summaries
   utils.py                   configs, seeding, atomic JSON/JSONL IO, metrics logger, checkpoints
-configs/                     sft.yaml, dpo_hh.yaml, dpo_uf.yaml, lora_persona.yaml (guide values)
+configs/                     sft.yaml, dpo_hh.yaml, dpo_uf.yaml, lora_persona.yaml (guide values);
+                             dpo_hh_lr5e6.yaml, lora_persona_beta05.yaml, lora_persona_1epoch.yaml (ablations)
 scripts/                     env_check, prepare_data, train_sft, train_dpo, train_lora_dpo, generate,
                              build_pairs, judge_pairwise_kaggle, summarize_judgments, analyze_generations,
-                             show_examples, plot_metrics, collect_results
+                             show_examples, plot_metrics, collect_results, analyze_length_bias
 notebooks/                   01 ... 06 Kaggle notebooks (+ build_notebooks.py that generates them)
 eval_sets/                   hh_rlhf_eval_300_seed42.json (given), persona_style_eval.json (24 prompts),
                              alpaca_eval_300_seed42.json (created by prepare_data.py)
@@ -64,9 +65,10 @@ Run every training notebook with **Save Version → Save & Run All (Commit)**. L
 | 02 | `02_train_sft` | T4 x2 | 01 | ~1.5–2 h |
 | 03a | `03a_train_dpo_hh` | T4 x2 | 01, 02 | ~2–2.5 h |
 | 03b | `03b_train_dpo_uf` | T4 x2 | 01, 02 | ~2–2.5 h |
+| 03c | `03c_ablations` (HH lr 5e-6; LoRA β 0.5; LoRA 1 epoch) | T4 x2 | 01, 02 | ~1.5 h |
 | 04 | `04_train_lora_persona` | T4 | – | ~20 min |
 | 05 | `05_generate_eval_outputs` | T4 x2 | 01, 02, 03a, 03b | ~45 min |
-| 06 | `06_judge_and_report_assets` | none (**Benchmark notebook**) | 02, 03a, 03b, 04, 05 | ~45 min |
+| 06 | `06_judge_and_report_assets` | none (**Benchmark notebook**) | 02, 03a, 03b, 03c, 04, 05 | ~2–3 h |
 
 Every notebook needs Internet ON. Notebook 01 runs all the tests before doing anything expensive. Notebooks 02 and 03 each do a few-step pilot run before the full run.
 
