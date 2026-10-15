@@ -1,0 +1,149 @@
+{
+  "candidate": "qwen2.5-0.5b-sft",
+  "baseline": "qwen2.5-0.5b-base",
+  "overall": {
+    "win_rate_excluding_ties_ci95": [
+      0.48083504378050035,
+      0.597222985978059
+    ],
+    "win_rate_ties_half_ci95": [
+      0.48226798206937127,
+      0.591065351263962
+    ],
+    "n": 300,
+    "wins": 150,
+    "losses": 128,
+    "ties": 22,
+    "unknown": 0,
+    "failed": 0,
+    "win_rate_excluding_ties": 0.539568345323741,
+    "win_rate_ties_half": 0.5366666666666666,
+    "win_rate_ties_as_non_wins": 0.5,
+    "unknown_rate": 0.0,
+    "failure_rate": 0.0
+  },
+  "per_category": {
+    "helpful_base": {
+      "win_rate_excluding_ties_ci95": [
+        0.42223890740554393,
+        0.7031749583514542
+      ],
+      "win_rate_ties_half_ci95": [
+        0.4311295468916123,
+        0.6865175119319171
+      ],
+      "n": 51,
+      "wins": 25,
+      "losses": 19,
+      "ties": 7,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.5681818181818182,
+      "win_rate_ties_half": 0.5588235294117647,
+      "win_rate_ties_as_non_wins": 0.49019607843137253,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "koala": {
+      "win_rate_excluding_ties_ci95": [
+        0.4503286833116465,
+        0.7026243295228107
+      ],
+      "win_rate_ties_half_ci95": [
+        0.45435500553580543,
+        0.6956449944641945
+      ],
+      "n": 60,
+      "wins": 32,
+      "losses": 23,
+      "ties": 5,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.5818181818181818,
+      "win_rate_ties_half": 0.575,
+      "win_rate_ties_as_non_wins": 0.5333333333333333,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "oasst": {
+      "win_rate_excluding_ties_ci95": [
+        0.36124029356039444,
+        0.6211669574670219
+      ],
+      "win_rate_ties_half_ci95": [
+        0.3574029331444091,
+        0.6240785483370724
+      ],
+      "n": 54,
+      "wins": 26,
+      "losses": 27,
+      "ties": 1,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.49056603773584906,
+      "win_rate_ties_half": 0.49074074074074076,
+      "win_rate_ties_as_non_wins": 0.48148148148148145,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "selfinstruct": {
+      "win_rate_excluding_ties_ci95": [
+        0.4026891499485618,
+        0.608319022518678
+      ],
+      "win_rate_ties_half_ci95": [
+        0.40853928050350446,
+        0.6019870352859692
+      ],
+      "n": 95,
+      "wins": 44,
+      "losses": 43,
+      "ties": 8,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.5057471264367817,
+      "win_rate_ties_half": 0.5052631578947369,
+      "win_rate_ties_as_non_wins": 0.4631578947368421,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "vicuna": {
+      "win_rate_excluding_ties_ci95": [
+        0.43418348473344903,
+        0.7292091056459952
+      ],
+      "win_rate_ties_half_ci95": [
+        0.43500134510891664,
+        0.7399986548910834
+      ],
+      "n": 40,
+      "wins": 23,
+      "losses": 16,
+      "ties": 1,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.5897435897435898,
+      "win_rate_ties_half": 0.5875,
+      "win_rate_ties_as_non_wins": 0.575,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    }
+  },
+  "verdict_position_counts": {
+    "B": 110,
+    "A": 168,
+    "tie": 22
+  },
+  "judge_picked_A_rate": 0.60431654676259,
+  "mean_attempts": 1.0,
+  "pairs_needing_retry": 0,
+  "judge_model": "google/gemini-3.6-flash",
+  "rubric": "general",
+  "pairs_path": "outputs/eval/sft_vs_base_alpaca_pairs.jsonl",
+  "batch_size": 5,
+  "sleep_seconds": 5.0,
+  "max_retries": 3,
+  "requests_this_run": 60,
+  "request_errors_this_run": 0,
+  "parse_retries_this_run": 0
+}

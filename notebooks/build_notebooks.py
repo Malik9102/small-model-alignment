@@ -518,7 +518,7 @@ NOTEBOOKS["06_judge_and_report_assets.ipynb"] = notebook(
             "        sh(f'python scripts/show_examples.py --pairs outputs/eval/{pairs}_pairs.jsonl --judged outputs/eval/{judged}_judged.jsonl --k {k} --output outputs/eval/examples_{judged}.md > /dev/null')\n"
             "!python scripts/analyze_generations.py outputs/generations/*.json --output outputs/eval/generation_stats.json",
         ),
-        ("code", "!cd {REPO_DIR} && zip -qr /kaggle/working/06_final_results.zip outputs && ls -lh /kaggle/working/06_final_results.zip"),
+        ("code", "shutil.make_archive('/kaggle/working/06_final_results', 'zip', REPO_DIR, 'outputs')\n!ls -lh /kaggle/working/06_final_results.zip"),
     ],
 )
 

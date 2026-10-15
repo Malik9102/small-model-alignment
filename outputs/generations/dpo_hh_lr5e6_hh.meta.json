@@ -1,0 +1,22 @@
+{
+  "generator": "qwen2.5-0.5b-dpo-hh-lr5e-6",
+  "model_path": "outputs/dpo_hh_lr5e6/best",
+  "adapter_path": null,
+  "eval_set": "eval_sets/hh_rlhf_eval_300_seed42.json",
+  "num_prompts": 300,
+  "prompt_format": "plain",
+  "decoding": {
+    "strategy": "greedy",
+    "temperature": null,
+    "top_p": null,
+    "max_new_tokens": 512,
+    "repetition_penalty": 1.1,
+    "length_penalty": null,
+    "no_repeat_ngram_size": 0,
+    "stop_strings": [
+      "### Instruction:",
+      "\n### Response:"
+    ],
+    "dtype": "float32"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "candidate": "smollm2-360m-lora-dpo-1epoch",
+  "baseline": "smollm2-360m-instruct",
+  "overall": {
+    "win_rate_excluding_ties_ci95": [
+      0.25819502085709295,
+      0.6579179916924003
+    ],
+    "win_rate_ties_half_ci95": [
+      0.27257239663278604,
+      0.6440942700338805
+    ],
+    "n": 24,
+    "wins": 9,
+    "losses": 11,
+    "ties": 4,
+    "unknown": 0,
+    "failed": 0,
+    "win_rate_excluding_ties": 0.45,
+    "win_rate_ties_half": 0.4583333333333333,
+    "win_rate_ties_as_non_wins": 0.375,
+    "unknown_rate": 0.0,
+    "failure_rate": 0.0
+  },
+  "per_category": {
+    "coding": {
+      "win_rate_excluding_ties_ci95": [
+        0.1176182311592533,
+        0.769280067791163
+      ],
+      "win_rate_ties_half_ci95": [
+        0.02330791042611835,
+        0.810025422907215
+      ],
+      "n": 6,
+      "wins": 2,
+      "losses": 3,
+      "ties": 1,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.4,
+      "win_rate_ties_half": 0.4166666666666667,
+      "win_rate_ties_as_non_wins": 0.3333333333333333,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "cooking": {
+      "win_rate_excluding_ties_ci95": [
+        0.43649056343635395,
+        0.9699474141282697
+      ],
+      "win_rate_ties_half_ci95": [
+        0.5066666666666666,
+        1.0
+      ],
+      "n": 6,
+      "wins": 5,
+      "losses": 1,
+      "ties": 0,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.8333333333333334,
+      "win_rate_ties_half": 0.8333333333333334,
+      "win_rate_ties_as_non_wins": 0.8333333333333334,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "general_help": {
+      "win_rate_excluding_ties_ci95": [
+        0.0,
+        0.48990002040399916
+      ],
+      "win_rate_ties_half_ci95": [
+        0.0,
+        0.3732688071310008
+      ],
+      "n": 6,
+      "wins": 0,
+      "losses": 4,
+      "ties": 2,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.0,
+      "win_rate_ties_half": 0.16666666666666666,
+      "win_rate_ties_as_non_wins": 0.0,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    },
+    "safety_sensitive": {
+      "win_rate_excluding_ties_ci95": [
+        0.1176182311592533,
+        0.769280067791163
+      ],
+      "win_rate_ties_half_ci95": [
+        0.02330791042611835,
+        0.810025422907215
+      ],
+      "n": 6,
+      "wins": 2,
+      "losses": 3,
+      "ties": 1,
+      "unknown": 0,
+      "failed": 0,
+      "win_rate_excluding_ties": 0.4,
+      "win_rate_ties_half": 0.4166666666666667,
+      "win_rate_ties_as_non_wins": 0.3333333333333333,
+      "unknown_rate": 0.0,
+      "failure_rate": 0.0
+    }
+  },
+  "verdict_position_counts": {
+    "A": 13,
+    "B": 7,
+    "tie": 4
+  },
+  "judge_picked_A_rate": 0.65,
+  "mean_attempts": 1.0,
+  "pairs_needing_retry": 0,
+  "judge_model": "google/gemini-3.6-flash",
+  "rubric": "persona_quality",
+  "pairs_path": "outputs/eval/lora_1epoch_vs_base_persona_pairs.jsonl",
+  "batch_size": 5,
+  "sleep_seconds": 5.0,
+  "max_retries": 3,
+  "requests_this_run": 5,
+  "request_errors_this_run": 0,
+  "parse_retries_this_run": 0
+}

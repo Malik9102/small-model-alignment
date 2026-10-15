@@ -1,0 +1,92 @@
+{
+  "UF-DPO vs SFT (AlpacaEval)": {
+    "pairs_judged": 300,
+    "mean_words_candidate": 196.6,
+    "mean_words_baseline": 139.6,
+    "candidate_longer_fraction": 0.8133333333333334,
+    "judge_picked_longer_rate": 0.41947565543071164,
+    "judge_picked_longer_ci95": [
+      0.3618358585911192,
+      0.4793997566171797
+    ],
+    "decided_pairs_with_unequal_length": 267,
+    "win_rate_candidate_longer": 0.4482758620689655,
+    "n_candidate_longer": 174,
+    "win_rate_candidate_shorter": 0.6666666666666666,
+    "n_candidate_shorter": 12,
+    "win_rate_near_equal": 0.4588235294117647,
+    "n_near_equal": 85
+  },
+  "HH-DPO vs SFT (HH set)": {
+    "pairs_judged": 300,
+    "mean_words_candidate": 123.3,
+    "mean_words_baseline": 130.3,
+    "candidate_longer_fraction": 0.47333333333333333,
+    "judge_picked_longer_rate": 0.44649446494464945,
+    "judge_picked_longer_ci95": [
+      0.38846376862745646,
+      0.5060209090923649
+    ],
+    "decided_pairs_with_unequal_length": 271,
+    "win_rate_candidate_longer": 0.5428571428571428,
+    "n_candidate_longer": 70,
+    "win_rate_candidate_shorter": 0.6702127659574468,
+    "n_candidate_shorter": 94,
+    "win_rate_near_equal": 0.5740740740740741,
+    "n_near_equal": 108
+  },
+  "HH-DPO lr5e-6 vs SFT (HH set)": {
+    "pairs_judged": 300,
+    "mean_words_candidate": 135.6,
+    "mean_words_baseline": 130.3,
+    "candidate_longer_fraction": 0.49333333333333335,
+    "judge_picked_longer_rate": 0.4471830985915493,
+    "judge_picked_longer_ci95": [
+      0.3904439170712117,
+      0.5053320930676981
+    ],
+    "decided_pairs_with_unequal_length": 284,
+    "win_rate_candidate_longer": 0.39805825242718446,
+    "n_candidate_longer": 103,
+    "win_rate_candidate_shorter": 0.5,
+    "n_candidate_shorter": 108,
+    "win_rate_near_equal": 0.5263157894736842,
+    "n_near_equal": 76
+  },
+  "HH-DPO vs SFT (AlpacaEval)": {
+    "pairs_judged": 300,
+    "mean_words_candidate": 127.0,
+    "mean_words_baseline": 139.6,
+    "candidate_longer_fraction": 0.35333333333333333,
+    "judge_picked_longer_rate": 0.40585774058577406,
+    "judge_picked_longer_ci95": [
+      0.34556630278844785,
+      0.46912771998195063
+    ],
+    "decided_pairs_with_unequal_length": 239,
+    "win_rate_candidate_longer": 0.34210526315789475,
+    "n_candidate_longer": 38,
+    "win_rate_candidate_shorter": 0.6103896103896104,
+    "n_candidate_shorter": 77,
+    "win_rate_near_equal": 0.48031496062992124,
+    "n_near_equal": 127
+  },
+  "SFT vs base (AlpacaEval)": {
+    "pairs_judged": 300,
+    "mean_words_candidate": 139.6,
+    "mean_words_baseline": 176.1,
+    "candidate_longer_fraction": 0.34,
+    "judge_picked_longer_rate": 0.381294964028777,
+    "judge_picked_longer_ci95": [
+      0.3261842854966358,
+      0.439641625227686
+    ],
+    "decided_pairs_with_unequal_length": 278,
+    "win_rate_candidate_longer": 0.4603174603174603,
+    "n_candidate_longer": 63,
+    "win_rate_candidate_shorter": 0.6571428571428571,
+    "n_candidate_shorter": 140,
+    "win_rate_near_equal": 0.38666666666666666,
+    "n_near_equal": 75
+  }
+}

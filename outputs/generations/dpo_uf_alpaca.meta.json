@@ -1,0 +1,22 @@
+{
+  "generator": "qwen2.5-0.5b-dpo-uf",
+  "model_path": "/kaggle/input/notebooks/sarmadnawazmalik/03b-train-dpo-uf/small-model-alignment/outputs/dpo_uf/best",
+  "adapter_path": null,
+  "eval_set": "eval_sets/alpaca_eval_300_seed42.json",
+  "num_prompts": 300,
+  "prompt_format": "plain",
+  "decoding": {
+    "strategy": "greedy",
+    "temperature": null,
+    "top_p": null,
+    "max_new_tokens": 512,
+    "repetition_penalty": 1.1,
+    "length_penalty": null,
+    "no_repeat_ngram_size": 0,
+    "stop_strings": [
+      "### Instruction:",
+      "\n### Response:"
+    ],
+    "dtype": "float32"
+  }
+}

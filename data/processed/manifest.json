@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "tokenizer": "Qwen/Qwen2.5-0.5B",
+  "max_length": 512,
+  "max_prompt_tokens": 256,
+  "prompt_template": "### Instruction:\\n{instruction}\\n\\n### Response:\\n",
+  "alpaca_eval": {
+    "path": "alpaca_eval_300_seed42.json",
+    "pool_size": 805,
+    "n": 300,
+    "seed": 42
+  },
+  "sft": {
+    "train": {
+      "seen": 57344,
+      "parse_fail": 7,
+      "blocked": 0,
+      "duplicate": 0,
+      "prompt_too_long": 11130,
+      "too_long": 16101,
+      "kept": 30000
+    },
+    "val": {
+      "seen": 2048,
+      "parse_fail": 0,
+      "blocked": 0,
+      "duplicate": 0,
+      "prompt_too_long": 415,
+      "too_long": 555,
+      "kept": 1000
+    },
+    "dataset": "HuggingFaceH4/ultrachat_200k"
+  },
+  "hh": {
+    "train": {
+      "seen": 49152,
+      "parse_fail": 34053,
+      "blocked": 2,
+      "prompt_too_long": 58,
+      "identical_after_truncation": 1,
+      "kept": 15000
+    },
+    "val": {
+      "seen": 4096,
+      "parse_fail": 2819,
+      "blocked": 11,
+      "prompt_too_long": 4,
+      "identical_after_truncation": 0,
+      "kept": 1000
+    },
+    "dataset": "Anthropic/hh-rlhf"
+  },
+  "uf": {
+    "train": {
+      "seen": 22528,
+      "parse_fail": 2907,
+      "blocked": 1,
+      "prompt_too_long": 3336,
+      "identical_after_truncation": 0,
+      "kept": 15000
+    },
+    "val": {
+      "seen": 2000,
+      "parse_fail": 285,
+      "blocked": 0,
+      "prompt_too_long": 194,
+      "identical_after_truncation": 0,
+      "kept": 1000
+    },
+    "dataset": "HuggingFaceH4/ultrafeedback_binarized"
+  }
+}

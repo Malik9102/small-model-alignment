@@ -1,0 +1,23 @@
+{
+  "run": "dpo_hh",
+  "optimizer_steps": 469,
+  "best_step": 200,
+  "best_val_reward_accuracy": 0.6160000562667847,
+  "best_val_reward_margin": 0.21464470028877258,
+  "final_val": {
+    "loss": 0.6393415927886963,
+    "reward_accuracy": 0.6150000095367432,
+    "reward_margin": 0.26364508271217346,
+    "chosen_reward": -0.3126116394996643,
+    "rejected_reward": -0.5762567520141602
+  },
+  "skipped_fp16_steps": 3,
+  "train_time": "1h11m07s",
+  "train_pairs": 15000,
+  "val_pairs": 1000,
+  "reference_checkpoint": "/kaggle/input/notebooks/sarmadnawazmalik/02-train-sft/small-model-alignment/outputs/sft/best",
+  "reference_checkpoint_state": {
+    "step": 938,
+    "val_loss": 1.3334685040490941
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "run": "sft",
+  "optimizer_steps": 938,
+  "best_step": 938,
+  "best_val_loss": 1.3334685040490941,
+  "final_val_loss": 1.3334685040490941,
+  "skipped_fp16_steps": 0,
+  "train_time": "1h23m26s",
+  "train_examples": 30000,
+  "val_examples": 1000
+}
